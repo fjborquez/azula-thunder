@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from database import create_transition, change_active_transition
 from enums.process_actions import ProcessActionsEnum
 from enums.observations import ObservationsEnum
@@ -30,8 +32,30 @@ def handle(details, process_action: int):
             if detail.get('expiration_date') is None:
                 add_status(detail, StatusEnum.UNDEFINED, ObservationsEnum.NO_EXPIRATION_DATE_BY_USER_ACTION)
                 return
+            else:
+                status, observation = get_status(detail)
+                add_status(detail, status, ObservationsEnum.NO_STATUS_BY_SYSTEM_PROCESS)
+        else:
+            if detail.get('expiration_date'):
+                status, observation = get_status(detail)
+                add_status(detail, status, observation)
+                return
+            else:
+                add_status(detail, StatusEnum.UNDEFINED, ObservationsEnum.NO_EXPIRATION_DATE_BY_SYSTEM_PROCESS)
 
 def add_status(detail, status: StatusEnum, observation: ObservationsEnum):
     is_active: bool = True
     change_active_transition(detail, not is_active)
     create_transition(detail, status, is_active, observation)
+
+def get_status(detail):
+    today = datetime.now().date()
+    expiration_date = datetime.strptime(detail.get('expiration_date'), "%Y-%m-%d").date()
+    delta = expiration_date - today
+
+    if delta.days > 7:
+        return StatusEnum.FRESH, ObservationsEnum.FIRST_DEFINED_STATUS_BY_USER_ACTION
+    elif 7 >= delta.days > 0:
+        return StatusEnum.APPROACHING_EXPIRY, ObservationsEnum.FIRST_DEFINED_STATUS_BY_USER_ACTION
+    else:
+        return StatusEnum.EXPIRED
