@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class Status(Enum):
+class StatusEnum(Enum):
     FRESH = 1
     APPROACHING_EXPIRY = 2
     EXPIRED = 3

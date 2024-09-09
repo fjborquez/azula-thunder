@@ -1,9 +1,10 @@
-from database import create_transition
-from enums.observations import Observations
-from enums.status import Status
+from database import create_transition, change_active_transition
+from enums.process_actions import ProcessActionsEnum
+from enums.observations import ObservationsEnum
+from enums.status import StatusEnum
 
 
-def handle(details):
+def handle(details, process_action: int):
     if details is None:
         return
 
@@ -12,12 +13,25 @@ def handle(details):
 
     if isinstance(details, dict):
         details = [details]
+
     for detail in details:
+        if detail.get('quantity') <= 0:
+            observation: ObservationsEnum
+
+            if process_action == ProcessActionsEnum.SYSTEM_PROCESS:
+                observation = ObservationsEnum.QUANTITY_IS_ZERO_BY_SYSTEM_PROCESS
+            else:
+                observation = ObservationsEnum.QUANTITY_IS_ZERO_BY_USER_ACTION
+
+            add_status(detail, StatusEnum.CONSUMED, observation)
+            return
+
         if detail.get('status') is None:
-            if detail.get('expíration_date') is None:
-                new_product(detail, Status.FRESH)
+            if detail.get('expiration_date') is None:
+                add_status(detail, StatusEnum.UNDEFINED, ObservationsEnum.NO_EXPIRATION_DATE_BY_USER_ACTION)
                 return
 
-def new_product(detail, status):
+def add_status(detail, status: StatusEnum, observation: ObservationsEnum):
     is_active: bool = True
-    create_transition(detail, status, is_active, Observations.FIRST_DEFINED_STATUS_BY_USER_ACTION)
+    change_active_transition(detail, not is_active)
+    create_transition(detail, status, is_active, observation)

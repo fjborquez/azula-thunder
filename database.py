@@ -1,11 +1,11 @@
 import mysql.connector
 from mysql.connector import errorcode
 
-from enums.observations import Observations
-from enums.status import Status
+from enums.observations import ObservationsEnum
+from enums.status import StatusEnum
 from secrets_handler import get_secret
 
-def create_transition(detail, new_status: Status, is_active: bool, observation: Observations):
+def create_transition(detail, new_status: StatusEnum, is_active: bool, observation: ObservationsEnum):
     query = ("INSERT INTO product_status_transitions (inventory_id, product_status_id, is_active, created_at, updated_at,"
              " observations) VALUES (%s, %s, %s, NOW(), NOW(), %s)")
     data = (detail['id'], new_status.value, is_active, observation.value)
@@ -16,7 +16,7 @@ def create_transition(detail, new_status: Status, is_active: bool, observation: 
     mydb.close()
 
 def change_active_transition(detail, is_active: bool):
-    query = "UPDATE product_status_transitions SET is_active = %s WHERE inventory_id = %s"
+    query = "UPDATE product_status_transitions SET is_active = %s, updated_at = NOW() WHERE inventory_id = %s"
     data = (is_active, detail['id'])
     mydb, cursor = connect()
     cursor.execute(query, data)
