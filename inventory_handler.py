@@ -17,7 +17,7 @@ def handle(details, process_action: int):
         details = [details]
 
     for detail in details:
-        if detail.get('quantity') is not None and int(detail.get('quantity')) <= 0:
+        if detail.get('quantity') is not None and float(detail.get('quantity')) <= 0:
             observation: ObservationsEnum
 
             if process_action == ProcessActionsEnum.SYSTEM_PROCESS:
