@@ -38,12 +38,14 @@ def handle(details, process_action: int):
                 add_status(detail, StatusEnum.UNDEFINED, ObservationsEnum.NO_EXPIRATION_DATE_BY_USER_ACTION)
                 return
             else:
-                status, observation = get_status(detail)
-                add_status(detail, status, ObservationsEnum.NO_STATUS_BY_USER_ACTION)
+                status = get_status(detail)
+                observations = get_observations(process_action)
+                add_status(detail, status, observations)
                 return
         else:
             if detail.get('expiration_date'):
-                status, observation = get_status(detail)
+                status = get_status(detail)
+                observation = get_observations(process_action, status)
                 add_status(detail, status, observation)
                 return
             else:
@@ -51,6 +53,12 @@ def handle(details, process_action: int):
                 return
 
 def add_status(detail, status: StatusEnum, observation: ObservationsEnum):
+    for old_status in detail.get('status', []):
+        print(old_status)
+        if (old_status.get('is_active') is True
+                and status == old_status.get('product_status_id')):
+            return
+
     is_active: bool = True
     change_active_transition(detail, not is_active)
     create_transition(detail, status, is_active, observation)
@@ -61,8 +69,25 @@ def get_status(detail):
     delta = expiration_date - today
 
     if delta.days > 7:
-        return StatusEnum.FRESH, ObservationsEnum.FIRST_DEFINED_STATUS_BY_USER_ACTION
+        return StatusEnum.FRESH
     elif 7 >= delta.days > 0:
-        return StatusEnum.APPROACHING_EXPIRY, ObservationsEnum.FIRST_DEFINED_STATUS_BY_USER_ACTION
+        return StatusEnum.APPROACHING_EXPIRY
     else:
         return StatusEnum.EXPIRED
+
+def get_observations(process_action: int, status = None):
+    if status == StatusEnum.CONSUMED:
+        if process_action == ProcessActionsEnum.USER_ACTION:
+            return ObservationsEnum.QUANTITY_IS_ZERO_BY_USER_ACTION
+        else:
+            return ObservationsEnum.QUANTITY_IS_ZERO_BY_SYSTEM_PROCESS
+    else:
+        if status is None:
+            if ProcessActionsEnum.USER_ACTION == process_action:
+                return ObservationsEnum.NO_STATUS_BY_USER_ACTION
+            else:
+                return ObservationsEnum.NO_STATUS_BY_SYSTEM_PROCESS
+        elif process_action == ProcessActionsEnum.USER_ACTION:
+            return ObservationsEnum.FIRST_DEFINED_STATUS_BY_USER_ACTION
+        else:
+            return ObservationsEnum.STATUS_UPDATED
