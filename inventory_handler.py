@@ -74,12 +74,13 @@ def handle_with_status(detail, process_action: int):
         if process_action == ProcessActionsEnum.USER_ACTION.value:
             observation = ObservationsEnum.STATUS_UPDATED_BY_USER_ACTION
         else:
-            observation = ObservationsEnum.NO_STATUS_BY_USER_ACTION
+            observation = ObservationsEnum.NO_STATUS_AND_NO_EXPIRATION_DATE_BY_SYSTEM_PROCESS
         add_status(detail, StatusEnum.UNDEFINED, observation)
 
 def add_status(detail, status: StatusEnum, observation: ObservationsEnum):
-    for old_status in detail.get('status', []):
-        if old_status.get('is_active') and status == old_status.get('product_status_id'):
+    for old_status in detail.get('product_status', []):
+        pivot = old_status.get('pivot')
+        if pivot.get('is_active') and status.value == old_status.get('id'):
             return
 
     is_active = True
