@@ -42,7 +42,7 @@ def is_expired(expiration_date: str) -> bool:
     return delta.days <= 0
 
 def update_status_for_detail(detail, process_action: int):
-    if detail.get('status') is None:
+    if detail.get('product_status') is None:
         handle_no_status(detail, process_action)
     else:
         handle_with_status(detail, process_action)
