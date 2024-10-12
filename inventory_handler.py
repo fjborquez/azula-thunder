@@ -16,7 +16,7 @@ def handle(details, process_action: int):
         if has_zero_or_less_quantity(detail):
             observation = determine_zero_quantity_observation(process_action)
             add_status(detail, StatusEnum.CONSUMED, observation)
-            return
+            continue
 
         if should_skip_due_to_expiry(detail, process_action):
             continue
