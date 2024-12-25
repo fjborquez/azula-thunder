@@ -6,7 +6,7 @@ from enums.observations import ObservationsEnum
 from enums.status import StatusEnum
 
 
-def handle(details, process_action: int):
+def updater(details, process_action: int):
     if not details:
         return
 

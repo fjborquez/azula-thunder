@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 import mysql.connector
 from mysql.connector import errorcode
 
@@ -24,7 +26,20 @@ def change_active_transition(detail, is_active: bool):
     cursor.close()
     mydb.close()
 
-def connect():
+def get_current_status(detail):
+    query = ("SELECT ps.* "
+             "FROM product_status_transitions pst "
+             "INNER JOIN product_status ps ON pst.product_status_id = ps.id "
+             "WHERE inventory_id = %s AND is_active = 1 LIMIT 1")
+    data = (detail['id'],)
+    mydb, cursor = connect(dictionary=True)
+    cursor.execute(query, data)
+    result = cursor.fetchone()
+    cursor.close()
+    mydb.close()
+    return result
+
+def connect(dictionary=False):
     host = get_secret("db_host")
     user = get_secret("db_user")
     password = get_secret("db_password")
@@ -44,4 +59,4 @@ def connect():
             print("Database does not exist")
         else:
             print(err)
-    return mydb, mydb.cursor()
+    return mydb, mydb.cursor(dictionary=dictionary)

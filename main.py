@@ -3,17 +3,32 @@ import json
 
 import functions_framework
 
-from inventory_handler import handle
+from product_discarder import discarder
+from product_status_updater import updater
 
 
-def extract_inventory(inventory, process_action: int) -> None:
+@functions_framework.cloud_event
+def update_product_status(cloud_event):
+    event_data = base64.b64decode(cloud_event.data['message']['data'])
+    event_data_json = json.loads(event_data)
+
+    inventory = event_data_json['inventory']
+    process_action = event_data_json['process_action']
+
     if inventory is None:
         return
 
-    handle(inventory, process_action)
+    updater(inventory, process_action)
 
 @functions_framework.cloud_event
-def main(cloud_event):
+def discard_product_status(cloud_event):
     event_data = base64.b64decode(cloud_event.data['message']['data'])
     event_data_json = json.loads(event_data)
-    extract_inventory(event_data_json['inventory'], int(event_data_json['process_action']))
+
+    inventory = event_data_json['inventory']
+
+    if inventory is None:
+        return
+
+    discarder(inventory)
+
