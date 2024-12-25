@@ -18,7 +18,7 @@ def discarder(inventory):
         create_transition(item, StatusEnum.DISCARDED, True, observation)
 
 def product_status_exist(detail):
-    return not detail['product_status'] is None
+    return 'product_status' in detail and detail['product_status'] is not None
 
 def no_apply_status(status):
     return (status['id'] == StatusEnum.EXPIRED
