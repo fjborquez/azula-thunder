@@ -13,6 +13,9 @@ def updater(details, process_action: int):
     details = details if isinstance(details, list) else [details]
 
     for detail in details:
+        if is_detail_in_final_phase_status(detail):
+            continue
+
         if has_zero_or_less_quantity(detail):
             observation = determine_zero_quantity_observation(process_action)
             add_status(detail, StatusEnum.CONSUMED, observation)
@@ -22,6 +25,10 @@ def updater(details, process_action: int):
             continue
 
         update_status_for_detail(detail, process_action)
+
+def is_detail_in_final_phase_status(detail) -> bool:
+    product_status = detail.get('product_status')
+    return product_status.get('is_final_phase') == True
 
 def has_zero_or_less_quantity(detail) -> bool:
     quantity = detail.get('quantity')
