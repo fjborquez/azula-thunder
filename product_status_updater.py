@@ -27,7 +27,7 @@ def updater(details, process_action: int):
         update_status_for_detail(detail, process_action)
 
 def is_detail_in_final_phase_status(detail) -> bool:
-    product_status = detail.get('product_status')
+    product_status = get_active_status(detail)
     return product_status.get('is_final_phase') == True
 
 def has_zero_or_less_quantity(detail) -> bool:
@@ -105,3 +105,9 @@ def get_status(detail) -> StatusEnum:
         return StatusEnum.APPROACHING_EXPIRY
     else:
         return StatusEnum.EXPIRED
+
+def get_active_status(detail):
+    for status in detail.get('product_status', []):
+        pivot = status.get('pivot')
+        if pivot.get('is_active'):
+            return status
