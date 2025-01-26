@@ -28,6 +28,10 @@ def updater(details, process_action: int):
 
 def is_detail_in_final_phase_status(detail) -> bool:
     product_status = get_active_status(detail)
+
+    if product_status is None:
+        return False
+
     return product_status.get('is_final_phase') == True
 
 def has_zero_or_less_quantity(detail) -> bool:
