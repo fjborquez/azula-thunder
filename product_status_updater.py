@@ -16,12 +16,15 @@ def updater(details, process_action: int):
         if is_detail_in_final_phase_status(detail):
             continue
 
-        if has_zero_or_less_quantity(detail):
-            observation = determine_zero_quantity_observation(process_action)
-            add_status(detail, StatusEnum.CONSUMED, observation)
+        if should_skip_due_to_consumed(detail):
             continue
 
         if should_skip_due_to_expiry(detail, process_action):
+            continue
+
+        if has_zero_or_less_quantity(detail):
+            observation = determine_zero_quantity_observation(process_action)
+            add_status(detail, StatusEnum.CONSUMED, observation)
             continue
 
         update_status_for_detail(detail, process_action)
@@ -47,6 +50,10 @@ def determine_zero_quantity_observation(process_action: int) -> ObservationsEnum
 def should_skip_due_to_expiry(detail, process_action: int) -> bool:
     expiration_date = detail.get('expiration_date')
     return expiration_date and is_expired(expiration_date) and process_action == ProcessActionsEnum.USER_ACTION.value
+
+def should_skip_due_to_consumed(detail) -> bool:
+    product_status = get_active_status(detail)
+    return product_status.get('id') == StatusEnum.CONSUMED.value
 
 def is_expired(expiration_date: str) -> bool:
     delta = datetime.strptime(expiration_date, "%Y-%m-%d").date() - datetime.now().date()

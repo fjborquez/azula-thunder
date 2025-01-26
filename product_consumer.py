@@ -23,7 +23,7 @@ def product_status_exist(detail):
 
 def no_apply_status(status):
     return (status['id'] == StatusEnum.EXPIRED or status['id'] == StatusEnum.CONSUMED
-            or status['id'] == StatusEnum.EXPIRED)
+            or status['id'] == StatusEnum.DISCARDED)
 
 def get_observation(status):
     if (status['id'] == StatusEnum.FRESH or status['id'] == StatusEnum.APPROACHING_EXPIRY
