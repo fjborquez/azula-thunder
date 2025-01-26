@@ -3,6 +3,7 @@ import json
 
 import functions_framework
 
+from product_consumer import consumer
 from product_discarder import discarder
 from product_status_updater import updater
 
@@ -32,3 +33,14 @@ def discard_product_status(cloud_event):
 
     discarder(inventory)
 
+@functions_framework.cloud_event
+def consumed_product_status(cloud_event):
+    event_data = base64.b64decode(cloud_event.data['message']['data'])
+    event_data_json = json.loads(event_data)
+
+    inventory = event_data_json['inventory']
+
+    if inventory is None:
+        return
+
+    consumer(inventory)
