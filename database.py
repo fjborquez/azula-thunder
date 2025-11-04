@@ -48,10 +48,10 @@ def get_current_status(detail):
     return result
 
 def connect(dictionary=False):
-    host = "localhost"
-    user = "avatar"
-    password = "avatar"
-    database = "azula"
+    host = get_secret("db_host")
+    user = get_secret("db_user")
+    password = get_secret("db_password")
+    database = get_secret("db_name")
 
     try:
         mydb = mysql.connector.connect(
