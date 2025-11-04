@@ -10,7 +10,15 @@ from secrets_handler import get_secret
 def create_transition(detail, new_status: StatusEnum, is_active: bool, observation: ObservationsEnum):
     query = ("INSERT INTO product_status_transitions (inventory_id, product_status_id, is_active, created_at, updated_at,"
              " observations) VALUES (%s, %s, %s, NOW(), NOW(), %s)")
-    data = (detail['id'], new_status.value, is_active, observation.value)
+
+    observation_value = ""
+
+    if type(observation) is str:
+        observation_value = observation
+    else:
+        observation_value = observation.value
+
+    data = (detail['id'], new_status.value, is_active, observation_value)
     mydb, cursor = connect()
     cursor.execute(query, data)
     mydb.commit()
@@ -40,10 +48,10 @@ def get_current_status(detail):
     return result
 
 def connect(dictionary=False):
-    host = get_secret("db_host")
-    user = get_secret("db_user")
-    password = get_secret("db_password")
-    database = get_secret("db_name")
+    host = "localhost"
+    user = "avatar"
+    password = "avatar"
+    database = "azula"
 
     try:
         mydb = mysql.connector.connect(

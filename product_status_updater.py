@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from database import create_transition, change_active_transition
-from enums.process_actions import ProcessActionsEnum
 from enums.observations import ObservationsEnum
+from enums.process_actions import ProcessActionsEnum
 from enums.status import StatusEnum
 
 
@@ -75,7 +75,14 @@ def handle_with_status(detail, process_action: int):
         if process_action == ProcessActionsEnum.USER_ACTION.value:
             observation = ObservationsEnum.STATUS_UPDATED_BY_USER_ACTION
         else:
-            observation = ObservationsEnum.STATUS_UPDATED_BY_SYSTEM_PROCESS
+            old_detail = detail.get('old_inventory')
+
+            if detail.get('merged_id'):
+                observation = (ObservationsEnum.UPDATE_QUANTITY_BY_MERGE.value.replace("${OLD_QUANTITY}", old_detail['quantity'])
+                               .replace("${OLD_UOM_DESCRIPTION}", old_detail['uom_abbreviation']).replace("${NEW_QUANTITY}", detail['quantity'])
+                               .replace("${UOM_DESCRIPTION}", detail['uom_abbreviation'])).replace("{$OTHER_INVENTORY_ID}", detail.get('merged_id'))
+            else:
+                observation = ObservationsEnum.STATUS_UPDATED_BY_SYSTEM_PROCESS
         add_status(detail, status, observation)
     else:
         if process_action == ProcessActionsEnum.USER_ACTION.value:
