@@ -28,7 +28,11 @@ def updater(details, process_action: int):
 
 def is_detail_in_final_phase_status(detail) -> bool:
     product_status = get_active_status(detail)
-    return product_status.get('is_final_phase') == True
+    
+    if product_status:
+        return product_status.get('is_final_phase') == True
+    else:
+        return False
 
 def has_zero_or_less_quantity(detail) -> bool:
     quantity = detail.get('quantity')
@@ -73,16 +77,19 @@ def handle_with_status(detail, process_action: int):
     if detail.get('expiration_date'):
         status = get_status(detail)
         if process_action == ProcessActionsEnum.USER_ACTION.value:
-            observation = ObservationsEnum.STATUS_UPDATED_BY_USER_ACTION
-        else:
             old_detail = detail.get('old_inventory')
 
             if detail.get('merged_id'):
-                observation = (ObservationsEnum.UPDATE_QUANTITY_BY_MERGE.value.replace("${OLD_QUANTITY}", old_detail['quantity'])
-                               .replace("${OLD_UOM_DESCRIPTION}", old_detail['uom_abbreviation']).replace("${NEW_QUANTITY}", detail['quantity'])
-                               .replace("${UOM_DESCRIPTION}", detail['uom_abbreviation'])).replace("{$OTHER_INVENTORY_ID}", detail.get('merged_id'))
+                observation = (
+                    ObservationsEnum.UPDATE_QUANTITY_BY_MERGE.value.replace("${OLD_QUANTITY}", old_detail['quantity'])
+                    .replace("${OLD_UOM_DESCRIPTION}", old_detail['uom_abbreviation']).replace("${NEW_QUANTITY}",
+                                                                                               detail['quantity'])
+                    .replace("${UOM_DESCRIPTION}", detail['uom_abbreviation'])).replace("{$OTHER_INVENTORY_ID}",
+                                                                                        detail.get('merged_id'))
             else:
-                observation = ObservationsEnum.STATUS_UPDATED_BY_SYSTEM_PROCESS
+                observation = ObservationsEnum.STATUS_UPDATED_BY_USER_ACTION
+        else:
+            observation = ObservationsEnum.STATUS_UPDATED_BY_SYSTEM_PROCESS
         add_status(detail, status, observation)
     else:
         if process_action == ProcessActionsEnum.USER_ACTION.value:
